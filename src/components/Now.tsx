@@ -1,3 +1,4 @@
+"use client";
 import { Schedule as ScheduleType } from "@/types";
 import { useMemo } from "react";
 import dayjs from "dayjs";
@@ -14,19 +15,17 @@ export function Now({ schedules }: NowProps) {
     const scheduleToday = schedules.filter(
       (item) => item.dayOfWeek === dayOfWeek
     );
-    console.log("currentHour", currentHour, currentHour + 1);
-    console.log("scheduleToday", scheduleToday);
     const channelNow = scheduleToday.filter(
-      (item) => item.hour >= currentHour && item.hour <= currentHour + 1
+      (item) => item.hour >= currentHour && item.hour < currentHour + 1
     );
-    console.log("channelNow", channelNow);
-
+    if (!channelNow.length) {
+      return "Không có dữ liệu";
+    }
     return channelNow.map((schedule) => schedule.channelName).join(", ");
   }, [schedules]);
   return (
     <Typography>
-      Đang phát
-      <br />
+      <Typography.Title>Đang phát</Typography.Title>
       {channelNow}
     </Typography>
   );
