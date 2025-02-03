@@ -1,6 +1,6 @@
 "use client";
 import { Schedule as ScheduleType } from "@/types";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { Typography } from "antd";
 
@@ -9,20 +9,27 @@ type NowProps = {
 };
 
 export function Now({ schedules }: NowProps) {
-  const channelNow = useMemo(() => {
+  const [channelNow, setChannelNow] = useState("");
+
+  useEffect(() => {
+
     const dayOfWeek = dayjs().day();
     const currentHour = dayjs().hour();
     const scheduleToday = schedules.filter(
       (item) => item.dayOfWeek === dayOfWeek
     );
-    const channelNow = scheduleToday.filter(
+    const _channelNow = scheduleToday.filter(
       (item) => item.hour >= currentHour && item.hour < currentHour + 1
     );
-    if (!channelNow.length) {
-      return "Không có dữ liệu";
+    if (!_channelNow.length) {
+      setChannelNow("Không có dữ liệu")
+    } else {
+      setChannelNow(
+        _channelNow.map((schedule) => schedule.channelName).join(", ")
+      );
     }
-    return channelNow.map((schedule) => schedule.channelName).join(", ");
   }, [schedules]);
+
   return (
     <Typography>
       <Typography.Title>Đang phát</Typography.Title>

@@ -1,13 +1,13 @@
 "use client";
 import { Schedule as ScheduleType } from "@/types";
 import dayjs from "dayjs";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import _sortBy from "lodash/sortBy";
 import _groupBy from "lodash/groupBy";
 import _get from "lodash/get";
 import _round from "lodash/round";
 import _toNumber from "lodash/toNumber";
-import { Timeline, Typography } from "antd";
+import { Timeline, TimelineItemProps, Typography } from "antd";
 
 type TodayProps = {
   schedules: ScheduleType[];
@@ -29,26 +29,33 @@ function getTimeFormat(hour: number) {
 }
 
 export function Today({ schedules }: TodayProps) {
-  const data = useMemo(() => {
+  const [timeLine, setTimeLine] = useState<TimelineItemProps[]>([]);
+
+  useEffect(() => {
     const dayOfWeek = dayjs().day();
     const scheduleToday = schedules.filter(
       (item) => item.dayOfWeek === dayOfWeek
     );
     const scheduleTodaySorted = _sortBy(scheduleToday, "hour");
     const groupByTime = _groupBy(scheduleTodaySorted, "hour");
-    return Object.keys(groupByTime).sort((a, b) => _toNumber(a) > _toNumber(b) ? 1 : -1).map((hour) => {
-      const list = _get(groupByTime, hour, [])
-        .map((item) => item.channelName)
-        .join(", ");
-      return {
-        children: `(${getTimeFormat(_toNumber(hour))}) ${list}`,
-      };
-    });
+
+    setTimeLine(
+      Object.keys(groupByTime)
+        .sort((a, b) => (_toNumber(a) > _toNumber(b) ? 1 : -1))
+        .map((hour) => {
+          const list = _get(groupByTime, hour, [])
+            .map((item) => item.channelName)
+            .join(", ");
+          return {
+            children: `(${getTimeFormat(_toNumber(hour))}) ${list}`,
+          };
+        })
+    );
   }, [schedules]);
   return (
     <Typography>
       <Typography.Title>Hôm nay</Typography.Title>
-      <Timeline items={data} />
+      <Timeline items={timeLine} />
     </Typography>
   );
 }

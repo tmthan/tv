@@ -1,7 +1,7 @@
 "use client";
 import { Schedule as ScheduleType } from "@/types";
-import { Table, TableProps, Typography } from "antd";
-import { useMemo } from "react";
+import { Spin, Table, TableProps, Typography } from "antd";
+import { StyleHTMLAttributes, useEffect, useState } from "react";
 import _groupBy from "lodash/groupBy";
 import _get from "lodash/get";
 import _flatten from "lodash/flatten";
@@ -93,29 +93,29 @@ type TableRow = {
   saturday?: string;
 };
 
-function renderCell(dayOfWeek: number, text: string, record: TableRow) {
+function renderCell(dayOfWeek: number, record: TableRow): StyleHTMLAttributes<HTMLTableCellElement> {
   if (!record?.time) {
-    return undefined;
+    return {};
   }
   const currentDayOfWeek = dayjs().day();
   const currentHour = dayjs().hour();
   if (dayOfWeek === currentDayOfWeek) {
-    const recordHour = dayjs().hour(
-      record.time ? _toNumber(record.time.split(":")[0]) : 0
-    ).hour();
+    const recordHour = dayjs()
+      .hour(record.time ? _toNumber(record.time.split(":")[0]) : 0)
+      .hour();
     return {
-      props: {
-        style: {
-          backgroundColor: recordHour === currentHour ? "#DD88CF" : "#fafafa",
-        },
+      style: {
+        backgroundColor: recordHour === currentHour ? "#DD88CF" : "#fafafa",
       },
-      children: text,
     };
   }
-  return undefined;
+  return {};
 }
 
 export function Schedule({ schedules }: ScheduleProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataSource, setDataSource] = useState<TableRow[]>([]);
+
   const columns: TableProps<TableRow>["columns"] = [
     {
       title: " ",
@@ -126,46 +126,47 @@ export function Schedule({ schedules }: ScheduleProps) {
       title: "CN",
       dataIndex: "sunday",
       key: "sunday",
-      render: (text, record) => renderCell(0, text, record),
+      onCell: (record) => renderCell(0, record),
     },
     {
       title: "T2",
       dataIndex: "monday",
       key: "monday",
-      render: (text, record) => renderCell(1, text, record),
+      onCell: (record) => renderCell(1, record),
     },
     {
       title: "T3",
       dataIndex: "tuesday",
       key: "tuesday",
-      render: (text, record) => renderCell(2, text, record),
+      onCell: (record) => renderCell(2, record),
     },
     {
       title: "T4",
       dataIndex: "wednesday",
       key: "wednesday",
-      render: (text, record) => renderCell(3, text, record),
+      onCell: (record) => renderCell(3, record),
     },
     {
       title: "T5",
       dataIndex: "thursday",
       key: "thursday",
-      render: (text, record) => renderCell(4, text, record),
+      onCell: (record) => renderCell(4, record),
     },
     {
       title: "T6",
       dataIndex: "friday",
       key: "friday",
-      render: (text, record) => renderCell(5, text, record),
+      onCell: (record) => renderCell(5, record),
     },
     {
       title: "T7",
       dataIndex: "saturday",
       key: "saturday",
-      render: (text, record) => renderCell(6, text, record),
+      onCell: (record) => renderCell(6, record),
     },
   ];
-  const data: TableRow[] = useMemo((): TableRow[] => {
+
+  useEffect(() => {
     const groupByHours = _groupBy(schedules, "hour");
     const result: TableRow[] = [];
     for (const hour of hours) {
@@ -190,13 +191,14 @@ export function Schedule({ schedules }: ScheduleProps) {
       }
       result.push(rowCells);
     }
-    return result;
+    setDataSource(result);
+    setIsLoading(false)
   }, [schedules]);
 
   return (
     <Typography>
       <Typography.Title>Tất cả</Typography.Title>
-      <Table columns={columns} dataSource={data} pagination={false} bordered />
+      { isLoading ? <Spin /> : <Table columns={columns} dataSource={dataSource} pagination={false} bordered />}
     </Typography>
   );
 }
