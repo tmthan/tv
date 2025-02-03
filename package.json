@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "copy-nojekyll": "cp .nojekyll docs/.nojekyll",
+    "copy-cname": "cp CNAME docs/CNAME",
+    "build": "next build && npm run copy-nojekyll && npm run copy-cname",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "release-auto": "npm run build && git add . && git commit -m 'release auto' && git push"
   },
   "dependencies": {
     "@types/lodash": "^4.17.15",
